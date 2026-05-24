@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from "next/navigation";
 import PopupGaleria from '@/componentes/PopupGaleria';
 
-export default function GaleriaPage() {
+function GaleriaContenido() {
   const [user, setUser] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
 
@@ -29,7 +29,6 @@ export default function GaleriaPage() {
         name: payload.email?.split('@')[0] || 'Usuario'
       });
 
-      // 🔥 redirección directa (simple y funcional)
       window.location.href = "https://diegodamchgmailcom.pic-time.com/client";
 
     } catch (error) {
@@ -37,40 +36,48 @@ export default function GaleriaPage() {
     }
   }, []);
 
-    if (!user) {
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundImage: 'url("/images/landing/DMC_26_29_011772.jpg")',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        position: 'relative',
-        filter: 'grayscale(100%) contrast(1.25)',
-      }}
-    >
+  if (!user) {
+    return (
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(255, 255, 255, 0.72)',
+          minHeight: '100vh',
+          backgroundImage: 'url("/images/landing/DMC_26_29_011772.jpg")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          position: 'relative',
+          filter: 'grayscale(100%) contrast(1.25)',
         }}
-      />
-
-      {showPopup && (
-        <PopupGaleria
-          isOpen={true}
-          modoInicial={modo}
-          onClose={() => {
-            setShowPopup(false);
-            window.location.href = '/';
+      >
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(255, 255, 255, 0.72)',
           }}
         />
-      )}
-    </div>
-  );
+
+        {showPopup && (
+          <PopupGaleria
+            isOpen={true}
+            modoInicial={modo}
+            onClose={() => {
+              setShowPopup(false);
+              window.location.href = '/';
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }
 
-return null;
+export default function GaleriaPage() {
+  return (
+    <Suspense fallback={null}>
+      <GaleriaContenido />
+    </Suspense>
+  );
 }
