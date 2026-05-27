@@ -2,6 +2,7 @@
 
 import { textos } from '@/idiomas/textos';
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function PopupGaleria({ isOpen, onClose, modoInicial ='magic' }) {
   const [email, setEmail] = useState('');
@@ -38,23 +39,19 @@ export default function PopupGaleria({ isOpen, onClose, modoInicial ='magic' }) 
     setMsg('');
 
     try {
-      const res = await fetch('/api/auth/register-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
+      const { error } = await supabase.auth.signInWithOtp({
+  email,
+  options: {
+    emailRedirectTo: 'https://dmcphoto.art/auth/callback'}
+});
 
-      const data = await res.json();
+if (error) throw error;
 
-      if (!res.ok) throw new Error(data.error);
-
-      localStorage.setItem('token', data.token);
-
-      setMsg(lang === 'es' ? 'Accediendo...' : 'Accessing...');
-
-      setTimeout(() => {
-        window.location.href = '/galeria';
-      }, 800);
+setMsg(
+  lang === 'es'
+    ? 'Revisa tu correo para ingresar'
+    : 'Check your email to login'
+);
     } catch (err) {
       setMsg(lang === 'es' ? 'Error al acceder' : 'Access error');
     }

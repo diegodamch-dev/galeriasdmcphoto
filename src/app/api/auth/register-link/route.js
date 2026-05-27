@@ -1,32 +1,41 @@
 import { NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import db from '@/lib/sqlite';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 export async function POST(request) {
   try {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json({ error: 'Email requerido' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Email requerido' },
+        { status: 400 }
+      );
     }
 
-    // crear usuario si no existe
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+    });
 
-    if (!user) {
-      db.prepare('INSERT INTO users (email) VALUES (?)').run(email);
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
     }
 
-    // generar token
-    const token = jwt.sign(
-      { email },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '7d' }
-    );
-
-    return NextResponse.json({ token });
+    return NextResponse.json({
+      success: true,
+    });
 
   } catch (error) {
-    return NextResponse.json({ error: 'Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Error enviando código' },
+      { status: 500 }
+    );
   }
 }
