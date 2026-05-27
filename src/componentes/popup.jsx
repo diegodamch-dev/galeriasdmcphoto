@@ -1,48 +1,30 @@
-'use client';
-import { useState, useEffect } from 'react';
+'use client'
 
-export default function Popup({ message, duration = 3000 }) {
-  const [isVisible, setIsVisible] = useState(true);
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+
+export default function AuthCallback() {
+
+  const router = useRouter()
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsVisible(false);
-    }, duration);
 
-    return () => clearTimeout(timer);
-  }, [duration]);
+    const handleAuth = async () => {
 
-  if (!isVisible) return null;
+      const { data, error } = await supabase.auth.exchangeCodeForSession(
+        window.location.href
+      )
 
-  return (
-    <div style={{
-      position: 'fixed',
-      top: '20px',
-      right: '20px',
-      backgroundColor: 'var(--color-primary)',
-      color: 'white',
-      padding: '1rem',
-      borderRadius: 'var(--border-radius)',
-      boxShadow: 'var(--box-shadow)',
-      zIndex: 1000
-    }}>
-      <p>{message}</p>
+      console.log(data)
+      console.log(error)
 
-      <button 
-        onClick={() => setIsVisible(false)}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: 'white',
-          position: 'absolute',
-          top: '5px',
-          right: '10px',
-          cursor: 'pointer',
-          fontSize: '1.2rem'
-        }}
-      >
-        ×
-      </button>
-    </div>
-  );
+      router.push('/galeria')
+    }
+
+    handleAuth()
+
+  }, [router])
+
+  return <p>Ingresando...</p>
 }

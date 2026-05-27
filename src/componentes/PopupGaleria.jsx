@@ -53,8 +53,12 @@ setMsg(
     : 'Check your email to login'
 );
     } catch (err) {
-      setMsg(lang === 'es' ? 'Error al acceder' : 'Access error');
-    }
+
+  console.error('SUPABASE ERROR:', err);
+
+  setMsg(err.message || 'Error');
+
+}
 
     setLoading(false);
   };

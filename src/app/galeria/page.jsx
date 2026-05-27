@@ -1,40 +1,43 @@
-'use client';
+'use client'
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from "next/navigation";
-import PopupGaleria from '@/componentes/PopupGaleria';
+import { Suspense, useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import PopupGaleria from '@/componentes/PopupGaleria'
 
 function GaleriaContenido() {
-  const [user, setUser] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
+  const [user, setUser] = useState(null)
+  const [showPopup, setShowPopup] = useState(false)
 
-  const searchParams = useSearchParams();
-  const modo = searchParams.get("modo") || 'magic';
+  const searchParams = useSearchParams()
+  const router = useRouter()
+
+  const modo = searchParams.get("modo") || 'magic'
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const checkSession = async () => {
 
-    if (!token) {
-      setShowPopup(true);
-      return;
-    }
+      const { data: { session } } = await supabase.auth.getSession()
 
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(atob(base64));
+      if (!session) {
+        setShowPopup(true)
+        return
+      }
+
+      const email = session.user.email
 
       setUser({
-        email: payload.email,
-        name: payload.email?.split('@')[0] || 'Usuario'
-      });
+        email,
+        name: email?.split('@')[0] || 'Usuario'
+      })
 
-      window.location.href = "https://diegodamchgmailcom.pic-time.com/client";
-
-    } catch (error) {
-      setShowPopup(true);
+      // Si hay sesión, ir a Pic-Time
+      window.location.href =
+        "https://diegodamchgmailcom.pic-time.com/client"
     }
-  }, []);
+
+    checkSession()
+  }, [])
 
   if (!user) {
     return (
@@ -62,16 +65,16 @@ function GaleriaContenido() {
             isOpen={true}
             modoInicial={modo}
             onClose={() => {
-              setShowPopup(false);
-              window.location.href = '/';
+              setShowPopup(false)
+              router.push('/')
             }}
           />
         )}
       </div>
-    );
+    )
   }
 
-  return null;
+  return null
 }
 
 export default function GaleriaPage() {
@@ -79,5 +82,5 @@ export default function GaleriaPage() {
     <Suspense fallback={null}>
       <GaleriaContenido />
     </Suspense>
-  );
+  )
 }
