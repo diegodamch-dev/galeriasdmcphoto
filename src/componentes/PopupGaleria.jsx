@@ -42,7 +42,7 @@ export default function PopupGaleria({ isOpen, onClose, modoInicial ='magic' }) 
       const { error } = await supabase.auth.signInWithOtp({
   email,
   options: {
-    emailRedirectTo: 'https://dmcphoto.art/auth/callback'}
+    emailRedirectTo: 'https://www.dmcphoto.art/auth/callback'}
 });
 
 if (error) throw error;
