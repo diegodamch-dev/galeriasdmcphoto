@@ -11,10 +11,10 @@ export async function POST(request) {
       );
     }
 
-    // Generar código aleatorio
+    // Generar código aleatorio de 6 caracteres
     const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    // Preparar datos para Google Sheets
+    // Datos para Google Sheets
     const body = {
       email: email,
       codigo: codigo,
@@ -22,7 +22,7 @@ export async function POST(request) {
       nombre: nombre || ''
     };
 
-    // Llamar a Google Apps Script desde el servidor (sin CORS)
+    // Llamar a Google Apps Script (sin problemas de CORS desde el servidor)
     const response = await fetch('https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec', {
       method: 'POST',
       headers: {
