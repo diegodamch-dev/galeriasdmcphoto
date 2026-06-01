@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 export default function PopupGaleria({
   isOpen,
   onClose,
-  modo = 'register' // 'register' o 'login'
+  modo = 'register'
 }) {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
@@ -29,14 +29,7 @@ export default function PopupGaleria({
     };
   }, []);
 
-  const t = textos[lang].popup;
-
   if (!isOpen) return null;
-
-  // Generar token único para enlace mágico
-  const generarToken = () => {
-    return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,43 +39,28 @@ export default function PopupGaleria({
     setMsg('');
 
     try {
-      const token = generarToken();
-      const magicLink = `https://dmcphoto.art/api/acceso?token=${token}&email=${encodeURIComponent(email)}`;
-      
-      // Enlace real a la galería externa (se enviará por correo)
-      const galeriaUrl = 'https://dmcphotography.arcadina.com/lang/es/';
-      
-      let body = {
-        action: modo,
-        nombre: nombre,
-        email: email,
-        token: token,
-        evento: 'DMC Photo',
-        fecha: new Date().toISOString(),
-        estado: 'pendiente'
-      };
-
-      const url = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';
-
-      const response = await fetch(url, {
+      // Llamar a nuestra propia API (no directamente a Google)
+      const response = await fetch('/api/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+          nombre: nombre,
+          email: email
+        })
       });
 
-      if (!response.ok) throw new Error('Error al guardar');
+      const data = await response.json();
 
-      const result = await response.json();
-      console.log('Guardado:', result);
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al registrar');
+      }
 
-      // Aquí debería enviar el correo con el enlace mágico
-      // Por ahora simulamos el envío
-      console.log('Enlace mágico (simulado):', magicLink);
-      
+      console.log('Respuesta:', data);
+
       setMsg(
         lang === 'es'
-          ? `¡Registro exitoso! Hemos enviado un enlace mágico a ${email}. Revise su correo (incluso spam).`
-          : `Registration successful! We've sent a magic link to ${email}. Check your inbox (including spam).`
+          ? `¡Registro exitoso! Hemos enviado un código a ${email}. Revise su correo (incluyendo spam).`
+          : `Registration successful! We've sent a code to ${email}. Check your inbox (including spam).`
       );
 
       setNombre('');
@@ -94,11 +72,11 @@ export default function PopupGaleria({
       }, 4000);
 
     } catch (err) {
-      console.error(err);
+      console.error('Error:', err);
       setMsg(
         lang === 'es'
-          ? 'Error al procesar la solicitud'
-          : 'Error processing request'
+          ? `Error: ${err.message}`
+          : `Error: ${err.message}`
       );
     }
 
@@ -113,7 +91,7 @@ export default function PopupGaleria({
         <button onClick={onClose} className="popup-close">×</button>
 
         <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          {esRegistro ? 'Acceso a Galería Privada' : 'Iniciar Sesión'}
+          {esRegistro ? 'Registro para Galería Privada' : 'Acceso a Galería Privada'}
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -142,7 +120,7 @@ export default function PopupGaleria({
             className="popup-btn"
             disabled={loading}
           >
-            {loading ? 'Enviando...' : (esRegistro ? 'Enviar enlace mágico' : 'Enviar enlace de acceso')}
+            {loading ? 'Enviando...' : (esRegistro ? 'Registrarse' : 'Acceder')}
           </button>
         </form>
 
