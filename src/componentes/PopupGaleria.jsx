@@ -10,7 +10,6 @@ export default function PopupGaleria({
 }) {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [lang, setLang] = useState('es');
@@ -34,6 +33,11 @@ export default function PopupGaleria({
 
   if (!isOpen) return null;
 
+  // Generar token único para enlace mágico
+  const generarToken = () => {
+    return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
@@ -42,70 +46,52 @@ export default function PopupGaleria({
     setMsg('');
 
     try {
-      let url = '';
-      let body = {};
+      const token = generarToken();
+      const magicLink = `https://dmcphoto.art/api/acceso?token=${token}&email=${encodeURIComponent(email)}`;
+      
+      // Enlace real a la galería externa (se enviará por correo)
+      const galeriaUrl = 'https://dmcphotography.arcadina.com/lang/es/';
+      
+      let body = {
+        action: modo,
+        nombre: nombre,
+        email: email,
+        token: token,
+        evento: 'DMC Photo',
+        fecha: new Date().toISOString(),
+        estado: 'pendiente'
+      };
 
-      if (modo === 'register') {
-        // Registro: guarda nombre, email, contraseña
-        url = 'https://script.google.com/macros/s/AKfycbzOpeK6CaZBOTsWpafxw-eaFnmBvvcoSRPFXHaM7sIXVyVrmQzPwbMkvYqNPAuYzQmqVw/exec';
-        body = {
-          action: 'registro',
-          nombre: nombre,
-          email: email,
-          password: password,
-          evento: 'DMC Photo',
-          fecha: new Date().toISOString(),
-          estado: 'pendiente' // pendiente de compra
-        };
+      const url = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        });
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
 
-        if (!response.ok) throw new Error('Error al registrar');
+      if (!response.ok) throw new Error('Error al guardar');
 
-        const result = await response.json();
-        console.log('Registro guardado:', result);
+      const result = await response.json();
+      console.log('Guardado:', result);
 
-        // Enviar enlace de acceso por correo (simulado)
-        const enlace = `https://dmcphotography.arcadina.com/lang/es/galeria?email=${encodeURIComponent(email)}`;
-        
-        setMsg(
-          lang === 'es'
-            ? `¡Registro exitoso! Revise su correo: ${email}. Enlace de acceso: ${enlace}`
-            : `Registration successful! Check your email: ${email}. Access link: ${enlace}`
-        );
+      // Aquí debería enviar el correo con el enlace mágico
+      // Por ahora simulamos el envío
+      console.log('Enlace mágico (simulado):', magicLink);
+      
+      setMsg(
+        lang === 'es'
+          ? `¡Registro exitoso! Hemos enviado un enlace mágico a ${email}. Revise su correo (incluso spam).`
+          : `Registration successful! We've sent a magic link to ${email}. Check your inbox (including spam).`
+      );
 
-        // Limpiar campos
-        setNombre('');
-        setEmail('');
-        setPassword('');
+      setNombre('');
+      setEmail('');
 
-        // Cerrar popup después de 3 segundos
-        setTimeout(() => {
-          onClose();
-          setMsg('');
-        }, 3000);
-
-      } else if (modo === 'login') {
-        // Login: verificar credenciales (necesita API adicional)
-        // Por ahora simula éxito si el email tiene @ y password no está vacío
-        if (!email.includes('@') || password.length < 3) {
-          throw new Error('Credenciales inválidas');
-        }
-
-        setMsg(
-          lang === 'es'
-            ? `Acceso concedido. Redirigiendo a la galería...`
-            : `Access granted. Redirecting to gallery...`
-        );
-
-        setTimeout(() => {
-          window.location.href = `https://dmcphotography.arcadina.com/lang/es/galeria?email=${encodeURIComponent(email)}`;
-        }, 1500);
-      }
+      setTimeout(() => {
+        onClose();
+        setMsg('');
+      }, 4000);
 
     } catch (err) {
       console.error(err);
@@ -127,7 +113,7 @@ export default function PopupGaleria({
         <button onClick={onClose} className="popup-close">×</button>
 
         <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          {esRegistro ? 'Registro para Galería Privada' : 'Acceso a Galería Privada'}
+          {esRegistro ? 'Acceso a Galería Privada' : 'Iniciar Sesión'}
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -151,21 +137,12 @@ export default function PopupGaleria({
             className="popup-input"
           />
 
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="popup-input"
-          />
-
           <button
             type="submit"
             className="popup-btn"
             disabled={loading}
           >
-            {loading ? '...' : (esRegistro ? 'Registrarse' : 'Acceder')}
+            {loading ? 'Enviando...' : (esRegistro ? 'Enviar enlace mágico' : 'Enviar enlace de acceso')}
           </button>
         </form>
 
