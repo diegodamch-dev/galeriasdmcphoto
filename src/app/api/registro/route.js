@@ -1,4 +1,8 @@
 import { NextResponse } from 'next/server';
+import { Resend } from 'resend';
+
+// Inicializar Resend solo si hay API key
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function POST(request) {
   try {
@@ -11,10 +15,12 @@ export async function POST(request) {
       );
     }
 
-    // Generar código aleatorio de 6 caracteres
+    // Generar código
     const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
     
-    // Datos para Google Sheets
+    // Guardar en Google Sheets
+    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';
+    
     const body = {
       email: email,
       codigo: codigo,
@@ -22,29 +28,46 @@ export async function POST(request) {
       nombre: nombre || ''
     };
 
-    // Llamar a Google Apps Script (sin problemas de CORS desde el servidor)
-    const response = await fetch('https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec', {
+    const response = await fetch(googleScriptUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.error || 'Error al guardar en Google Sheets');
+      console.error('Error en Google Script:', await response.text());
+      throw new Error('Error al guardar en Google Sheets');
+    }
+
+    // Enviar correo con Resend (solo si está configurado)
+    if (resend) {
+      try {
+        const emailResult = await resend.emails.send({
+          from: 'onboarding@resend.dev',
+          to: email,
+          subject: '🔐 Código de acceso a galería DMC Photo',
+          html: `
+            <h2>Hola ${nombre || 'cliente'},</h2>
+            <p>Tu código de acceso es: <strong>${codigo}</strong></p>
+            <p>Accede en: <a href="https://dmcphotography.arcadina.com/lang/es/">dmcphotography.arcadina.com</a></p>
+          `
+        });
+        console.log('Correo enviado:', emailResult);
+      } catch (emailError) {
+        console.error('Error al enviar correo:', emailError);
+      }
+    } else {
+      console.error('RESEND_API_KEY no configurada');
     }
 
     return NextResponse.json({ 
       ok: true, 
-      mensaje: 'Registro exitoso',
+      mensaje: 'Registro exitoso, revisa tu correo',
       codigo: codigo 
     });
 
   } catch (error) {
-    console.error('Error en API:', error);
+    console.error('Error general:', error);
     return NextResponse.json(
       { error: error.message || 'Error interno del servidor' },
       { status: 500 }
