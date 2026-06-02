@@ -43,7 +43,7 @@ export async function POST(request) {
     if (resend) {
       try {
         const emailResult = await resend.emails.send({
-          from: 'onboarding@resend.dev',
+          from: 'DMC Photo <no-reply@dmcphoto.art>',
           to: email,
           subject: '🔐 Código de acceso a galería DMC Photo',
           html: `
