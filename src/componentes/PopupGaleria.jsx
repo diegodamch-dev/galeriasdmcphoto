@@ -33,7 +33,7 @@ export default function PopupGaleria({
   // Verificar si Early Bird sigue vigente (hasta 15 de junio de 2026)
   const esEarlyBirdValido = () => {
     const hoy = new Date();
-    const fechaLimite = new Date(2026, 5, 15); // 15 de junio de 2026 (mes 5 = junio)
+    const fechaLimite = new Date(2026, 5, 15);
     return hoy <= fechaLimite;
   };
 
@@ -69,7 +69,7 @@ export default function PopupGaleria({
       setMsg(
         lang === 'es'
           ? `✅ ¡Registro exitoso! Revisa tu correo. Te hemos enviado los datos de pago y acceso.`
-          : `✅ Registration successful! Check your email. We have sent you the payment and access details.`
+          : `✅ Registration successful! Check your email.`
       );
 
       setNombre('');

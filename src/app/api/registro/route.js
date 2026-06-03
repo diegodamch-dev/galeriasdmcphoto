@@ -3,7 +3,6 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Precios por foto según plan
 const PRECIOS_POR_FOTO = {
   'Cóndor Early Bird': 1250,
   'Cóndor': 1250,
@@ -11,7 +10,6 @@ const PRECIOS_POR_FOTO = {
   'Jilguero': 2250
 };
 
-// Montos de membresía según plan
 const MONTOS_MEMBRESIA = {
   'Cóndor Early Bird': 40000,
   'Cóndor': 32500,
@@ -19,7 +17,6 @@ const MONTOS_MEMBRESIA = {
   'Jilguero': 20000
 };
 
-// Códigos de cupón según plan
 const CODIGOS_CUPON = {
   'Cóndor Early Bird': 'DESCUENTO_CONDOR',
   'Cóndor': 'DESCUENTO_CONDOR',
@@ -45,40 +42,34 @@ export async function POST(request) {
       );
     }
 
-    // URL CORRECTA de Google Sheets
-    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbzfeT1tgXxzs97Xe9JUVE_f5VjJ38G4wha8Oj8la-L7UuTc6DiCr5X-l9LIG0qB9uNP2Q/exec';    
-    
+    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbzfeT1tgXxzs97Xe9JUVE_f5VjJ38G4wha8Oj8la-L7UuTc6DiCr5X-l9LIG0qB9uNP2Q/exec';
+
     const body = {
       nombre: nombre || '',
       email: email,
       plan: plan,
       timestamp: timestamp || new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' }),
       evento: 'Club DMC - Membresía',
-      precioFoto: PRECIOS_POR_FOTO[plan] || 2250,
-      montoMembresia: MONTOS_MEMBRESIA[plan] || 20000,
+      precioFoto: PRECIOS_POR_FOTO[plan] || 0,
+      montoMembresia: MONTOS_MEMBRESIA[plan] || 0,
       codigoCupon: CODIGOS_CUPON[plan] || 'SIN_DESCUENTO'
     };
 
-    // Enviar a Google Sheets
     const response = await fetch(googleScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
-    const googleResult = await response.json();
-    console.log('Respuesta de Google Sheets:', googleResult);
-
     if (!response.ok) {
       throw new Error('Error al guardar en Google Sheets');
     }
 
-    // Obtener valores numéricos seguros
     const monto = MONTOS_MEMBRESIA[plan] || 0;
     const precioFoto = PRECIOS_POR_FOTO[plan] || 0;
+    const codigo = CODIGOS_CUPON[plan] || 'SIN_DESCUENTO';
 
-    // Enviar correo de confirmación
-    const emailResult = await resend.emails.send({
+    await resend.emails.send({
       from: 'DMC Photo <no-reply@dmcphoto.art>',
       to: email,
       subject: '🔐 Solicitud de membresía Club DMC 2026',
@@ -111,7 +102,7 @@ export async function POST(request) {
         <h3>🏷️ Código de descuento para fotos extras:</h3>
         <p>
           <strong style="background-color: #f0f0f0; padding: 8px 16px; border-radius: 5px; font-size: 18px;">
-            ${CODIGOS_CUPON[plan]}
+            ${codigo}
           </strong>
         </p>
         <p><strong>Precio por foto con descuento:</strong> $${precioFoto.toLocaleString()}</p>
@@ -121,8 +112,6 @@ export async function POST(request) {
         <p style="font-size: 12px;">Envía el comprobante de transferencia a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
       `
     });
-
-    console.log('Correo enviado:', emailResult);
 
     return NextResponse.json({ 
       ok: true, 
