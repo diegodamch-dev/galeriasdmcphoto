@@ -123,7 +123,7 @@ export async function POST(request) {
         <p>
           <strong>Usuario:</strong> ${usuario}<br>
           <strong>Contraseña:</strong> ${contraseña}<br><br>
-          <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/galeria/29-julio-2026">https://dmcphotography.arcadina.com/galeria/29-julio-2026</a>
+          <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/lang/es/cmi-26">https://dmcphotography.arcadina.com/lang/es/cmi-26</a>
         </p>
         
         <h3>🏷️ Código de descuento para fotos extras:</h3>
@@ -133,10 +133,11 @@ export async function POST(request) {
           </strong>
         </p>
         <p><strong>Precio por foto con descuento:</strong> $${precioFoto.toLocaleString()}</p>
+        <p><strong>Instrucciones:</strong> Al momento de pagar en el carrito, ingresa este código en el campo "Cupón de descuento".</p>
         
         <hr>
         <p style="font-size: 12px;">DMC Photo - Fotografía deportiva y de montaña</p>
-        <p style="font-size: 12px;">Envía el comprobante a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
+        <p style="font-size: 12px;">Envía el comprobante de transferencia a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
       `
     });
 
