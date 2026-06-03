@@ -137,9 +137,9 @@ export default function PopupGaleria({
               >
                 <option value="">Selecciona tu plan</option>
                 {esEarlyBirdValido() && (
-                  <option value="Cóndor Early Bird">Cóndor Early Bird - $32.500 (hasta 15 junio)</option>
+                  <option value="Cóndor Early Bird">Cóndor Early Bird - $40.000 (hasta 15 junio)</option>
                 )}
-                <option value="Cóndor">Cóndor - $30.000 (hasta 30 junio)</option>
+                <option value="Cóndor">Cóndor - $32.500 (hasta 30 junio)</option>
                 <option value="Cáraza">Cáraza - $27.500 (hasta 30 junio)</option>
                 <option value="Jilguero">Jilguero - $20.000 (hasta 30 junio)</option>
               </select>
