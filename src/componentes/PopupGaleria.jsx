@@ -10,6 +10,7 @@ export default function PopupGaleria({
 }) {
   const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
+  const [plan, setPlan] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [lang, setLang] = useState('es');
@@ -38,14 +39,17 @@ export default function PopupGaleria({
     setLoading(true);
     setMsg('');
 
+    const timestamp = new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' });
+
     try {
-      // Llamar a nuestra propia API (no directamente a Google)
       const response = await fetch('/api/registro', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre: nombre,
-          email: email
+          email: email,
+          plan: plan,
+          timestamp: timestamp
         })
       });
 
@@ -55,16 +59,15 @@ export default function PopupGaleria({
         throw new Error(data.error || 'Error al registrar');
       }
 
-      console.log('Respuesta:', data);
-
       setMsg(
         lang === 'es'
-          ? `¡Registro exitoso! Hemos enviado un código a ${email}. Revise su correo (incluyendo spam).`
-          : `Registration successful! We've sent a code to ${email}. Check your inbox (including spam).`
+          ? `✅ ¡Registro exitoso! Pronto recibirás tu código de acceso al club.`
+          : `✅ Registration successful! You will soon receive your club access code.`
       );
 
       setNombre('');
       setEmail('');
+      setPlan('');
 
       setTimeout(() => {
         onClose();
@@ -75,12 +78,12 @@ export default function PopupGaleria({
       console.error('Error:', err);
       setMsg(
         lang === 'es'
-          ? `Error: ${err.message}`
-          : `Error: ${err.message}`
+          ? `❌ Error: ${err.message}`
+          : `❌ Error: ${err.message}`
       );
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const esRegistro = modo === 'register';
@@ -90,30 +93,49 @@ export default function PopupGaleria({
       <div className="popup-box" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="popup-close">×</button>
 
-        <h2 style={{ textAlign: 'center', marginBottom: '1rem' }}>
-          {esRegistro ? 'Registro para Galería Privada' : 'Acceso a Galería Privada'}
+        <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--color-primary)' }}>
+          {esRegistro ? 'Únete al Club DMC 2026' : 'Iniciar Sesión'}
         </h2>
 
         <form onSubmit={handleSubmit}>
           {esRegistro && (
-            <input
-              type="text"
-              placeholder="Nombre completo"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-              required
-              className="popup-input"
-            />
-          )}
+            <>
+              <input
+                type="text"
+                name="nombre"
+                placeholder="Nombre completo"
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                required
+                className="popup-input"
+              />
 
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="popup-input"
-          />
+              <input
+                type="email"
+                name="email"
+                placeholder="Correo electrónico"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="popup-input"
+              />
+
+              <select
+                name="plan"
+                value={plan}
+                onChange={(e) => setPlan(e.target.value)}
+                required
+                className="popup-input"
+                style={{ cursor: 'pointer' }}
+              >
+                <option value="">Selecciona tu plan</option>
+                <option value="Cóndor Early Bird">Cóndor Early Bird - $32.500 (hasta 15 junio)</option>
+                <option value="Cóndor">Cóndor - $30.000 (hasta 30 junio)</option>
+                <option value="Cáraza">Cáraza - $27.500 (hasta 30 junio)</option>
+                <option value="Jilguero">Jilguero - $20.000 (hasta 30 junio)</option>
+              </select>
+            </>
+          )}
 
           <button
             type="submit"
@@ -125,7 +147,13 @@ export default function PopupGaleria({
         </form>
 
         {msg && (
-          <p style={{ marginTop: '15px', textAlign: 'center', fontSize: '0.85rem' }}>
+          <p style={{ 
+            marginTop: '15px', 
+            textAlign: 'center', 
+            fontSize: '0.9rem',
+            color: msg.includes('✅') ? 'var(--color-success)' : 'var(--color-error)',
+            fontWeight: '500'
+          }}>
             {msg}
           </p>
         )}

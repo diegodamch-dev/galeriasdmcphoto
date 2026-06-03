@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-// Inicializar Resend solo si hay API key
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request) {
   try {
-    const { nombre, email } = await request.json();
+    const { nombre, email, plan, timestamp } = await request.json();
 
     if (!email) {
       return NextResponse.json(
@@ -15,17 +14,15 @@ export async function POST(request) {
       );
     }
 
-    // Generar código
-    const codigo = Math.random().toString(36).substring(2, 8).toUpperCase();
-    
     // Guardar en Google Sheets
     const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';
     
     const body = {
+      nombre: nombre || '',
       email: email,
-      codigo: codigo,
-      evento: 'DMC Photo',
-      nombre: nombre || ''
+      plan: plan || '',
+      timestamp: timestamp || new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' }),
+      evento: 'Club DMC - Membresía'
     };
 
     const response = await fetch(googleScriptUrl, {
@@ -39,35 +36,34 @@ export async function POST(request) {
       throw new Error('Error al guardar en Google Sheets');
     }
 
-    // Enviar correo con Resend (solo si está configurado)
-    if (resend) {
-      try {
-        const emailResult = await resend.emails.send({
-          from: 'DMC Photo <no-reply@dmcphoto.art>',
-          to: email,
-          subject: '🔐 Código de acceso a galería DMC Photo',
-          html: `
-            <h2>Hola ${nombre || 'cliente'},</h2>
-            <p>Tu código de acceso es: <strong>${codigo}</strong></p>
-            <p>Accede en: <a href="https://dmcphotography.arcadina.com/lang/es/">dmcphotography.arcadina.com</a></p>
-          `
-        });
-        console.log('Correo enviado:', emailResult);
-      } catch (emailError) {
-        console.error('Error al enviar correo:', emailError);
-      }
-    } else {
-      console.error('RESEND_API_KEY no configurada');
+    // Enviar correo de confirmación con Resend
+    try {
+      await resend.emails.send({
+        from: 'DMC Photo <no-reply@dmcphoto.art>',
+        to: email,
+        subject: '🔐 Solicitud de membresía Club DMC 2026',
+        html: `
+          <h2>Hola ${nombre || 'cliente'},</h2>
+          <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
+          <p><strong>Plan seleccionado:</strong> ${plan}</p>
+          <p>En las próximas horas recibirás instrucciones de pago y tus credenciales de acceso a la galería privada.</p>
+          <p>Gracias por confiar en DMC Photo.</p>
+          <hr>
+          <p style="font-size: 12px; color: #666;">DMC Photo - Fotografía deportiva y de montaña</p>
+        `
+      });
+    } catch (emailError) {
+      console.error('Error al enviar correo:', emailError);
+      // No fallamos la petición si solo falla el correo
     }
 
     return NextResponse.json({ 
       ok: true, 
-      mensaje: 'Registro exitoso, revisa tu correo',
-      codigo: codigo 
+      mensaje: 'Registro exitoso, revisa tu correo'
     });
 
   } catch (error) {
-    console.error('Error general:', error);
+    console.error('Error:', error);
     return NextResponse.json(
       { error: error.message || 'Error interno del servidor' },
       { status: 500 }
