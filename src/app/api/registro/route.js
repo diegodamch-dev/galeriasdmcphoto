@@ -42,7 +42,7 @@ export async function POST(request) {
       );
     }
 
-    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbzfeT1tgXxzs97Xe9JUVE_f5VjJ38G4wha8Oj8la-L7UuTc6DiCr5X-l9LIG0qB9uNP2Q/exec';
+    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbyl3hCuqQ3tnotpMV42QSqjKUE5L4qYOZtqZlOkNetop7DhLhriqIOZuwh7x857ARBUhw/exec';
 
     const body = {
       nombre: nombre || '',
