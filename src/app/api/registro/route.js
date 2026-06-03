@@ -3,12 +3,28 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Precios por foto según plan (para referencia)
+// Precios por foto según plan
 const PRECIOS_POR_FOTO = {
-  'Cóndor Early Bird': 1200,
-  'Cóndor': 1200,
-  'Cáraza': 1750,
+  'Cóndor Early Bird': 1250,
+  'Cóndor': 1250,
+  'Caracara': 1750,
   'Jilguero': 2250
+};
+
+// Montos de membresía según plan
+const MONTOS_MEMBRESIA = {
+  'Cóndor Early Bird': 40000,
+  'Cóndor': 32500,
+  'Caracara': 27500,
+  'Jilguero': 20000
+};
+
+// Códigos de cupón según plan
+const CODIGOS_CUPON = {
+  'Cóndor Early Bird': 'DESCUENTO_CONDOR',
+  'Cóndor': 'DESCUENTO_CONDOR',
+  'Caracara': 'DESCUENTO_CARACARA',
+  'Jilguero': 'SIN_DESCUENTO'
 };
 
 export async function POST(request) {
@@ -38,7 +54,9 @@ export async function POST(request) {
       plan: plan,
       timestamp: timestamp || new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' }),
       evento: 'Club DMC - Membresía',
-      precioFoto: PRECIOS_POR_FOTO[plan] || 2250
+      precioFoto: PRECIOS_POR_FOTO[plan] || 2250,
+      montoMembresia: MONTOS_MEMBRESIA[plan] || 20000,
+      codigoCupon: CODIGOS_CUPON[plan] || 'SIN_DESCUENTO'
     };
 
     const response = await fetch(googleScriptUrl, {
@@ -60,13 +78,50 @@ export async function POST(request) {
         subject: '🔐 Solicitud de membresía Club DMC 2026',
         html: `
           <h2>Hola ${nombre || 'cliente'},</h2>
+          
           <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
+          
           <p><strong>Plan seleccionado:</strong> ${plan}</p>
-          <p><strong>Precio por foto en galerías:</strong> $${PRECIOS_POR_FOTO[plan]}</p>
-          <p>En las próximas horas recibirás instrucciones de pago y tus credenciales de acceso a la galería privada.</p>
-          <p>Gracias por confiar en DMC Photo.</p>
+          <p><strong>Monto a transferir:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}</p>
+          
+          <h3>📌 Datos para la transferencia bancaria:</h3>
+          <p>
+            Banco: [Bancoestado]<br>
+            Titular: [DMCPhoto<br>
+            RUT: [76061484k]<br>
+            Email: [dmcphoto2002@yahoo.com]<br>
+            Número de cuenta: [27070042806]<br>
+            <strong>Monto:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}
+          </p>
+          
+          <h3>🔗 Instrucciones para acceder a la galería:</h3>
+          <p>
+            Una vez realizada la transferencia, accede a la galería con estos datos:<br><br>
+            <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026">https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026</a><br>
+            <strong>Usuario:</strong> cliente.${plan.toLowerCase().replace(' ', '')}<br>
+            <strong>Contraseña:</strong> ${plan}2026
+          </p>
+          
+          <h3>🏷️ Código de descuento para fotos extras:</h3>
+          <p>
+            <strong style="background-color: #f0f0f0; padding: 8px 16px; border-radius: 5px; font-size: 18px;">
+              ${CODIGOS_CUPON[plan]}
+            </strong>
+          </p>
+          <p>
+            <strong>¿Cómo aplicar el descuento?</strong><br>
+            1. Selecciona tus fotos favoritas<br>
+            2. Ve al carrito de compras<br>
+            3. Busca el campo "Cupón de descuento" o "Código promocional"<br>
+            4. Ingresa el código de descuento que te compartimos<br>
+            5. El precio se ajustará automáticamente a tu tarifa preferencial
+          </p>
+          
+          <p><strong>Precio por foto con descuento:</strong> $${PRECIOS_POR_FOTO[plan].toLocaleString()}</p>
+          
           <hr>
-          <p style="font-size: 12px; color: #666;">DMC Photo - Fotografía deportiva y de montaña</p>
+          <p style="font-size: 12px; color: #2001;">DMC Photo - Fotografía deportiva y de montaña</p>
+          <p style="font-size: 12px; color: #2007;">Envía el comprobante de transferencia a [tu correo] para activar tu cuenta.</p>
         `
       });
     } catch (emailError) {
@@ -76,7 +131,9 @@ export async function POST(request) {
     return NextResponse.json({ 
       ok: true, 
       mensaje: 'Registro exitoso, revisa tu correo',
-      precioFoto: PRECIOS_POR_FOTO[plan]
+      precioFoto: PRECIOS_POR_FOTO[plan],
+      montoMembresia: MONTOS_MEMBRESIA[plan],
+      codigoCupon: CODIGOS_CUPON[plan]
     });
 
   } catch (error) {
