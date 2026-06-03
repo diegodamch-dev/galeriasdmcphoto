@@ -3,6 +3,14 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Precios por foto según plan (para referencia)
+const PRECIOS_POR_FOTO = {
+  'Cóndor Early Bird': 1200,
+  'Cóndor': 1200,
+  'Cáraza': 1750,
+  'Jilguero': 2250
+};
+
 export async function POST(request) {
   try {
     const { nombre, email, plan, timestamp } = await request.json();
@@ -14,15 +22,23 @@ export async function POST(request) {
       );
     }
 
+    if (!plan) {
+      return NextResponse.json(
+        { error: 'Debes seleccionar un plan' },
+        { status: 400 }
+      );
+    }
+
     // Guardar en Google Sheets
     const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';
     
     const body = {
       nombre: nombre || '',
       email: email,
-      plan: plan || '',
+      plan: plan,
       timestamp: timestamp || new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' }),
-      evento: 'Club DMC - Membresía'
+      evento: 'Club DMC - Membresía',
+      precioFoto: PRECIOS_POR_FOTO[plan] || 2250
     };
 
     const response = await fetch(googleScriptUrl, {
@@ -46,6 +62,7 @@ export async function POST(request) {
           <h2>Hola ${nombre || 'cliente'},</h2>
           <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
           <p><strong>Plan seleccionado:</strong> ${plan}</p>
+          <p><strong>Precio por foto en galerías:</strong> $${PRECIOS_POR_FOTO[plan]}</p>
           <p>En las próximas horas recibirás instrucciones de pago y tus credenciales de acceso a la galería privada.</p>
           <p>Gracias por confiar en DMC Photo.</p>
           <hr>
@@ -54,12 +71,12 @@ export async function POST(request) {
       });
     } catch (emailError) {
       console.error('Error al enviar correo:', emailError);
-      // No fallamos la petición si solo falla el correo
     }
 
     return NextResponse.json({ 
       ok: true, 
-      mensaje: 'Registro exitoso, revisa tu correo'
+      mensaje: 'Registro exitoso, revisa tu correo',
+      precioFoto: PRECIOS_POR_FOTO[plan]
     });
 
   } catch (error) {

@@ -30,6 +30,13 @@ export default function PopupGaleria({
     };
   }, []);
 
+  // Verificar si Early Bird sigue vigente (hasta 15 de junio de 2026)
+  const esEarlyBirdValido = () => {
+    const hoy = new Date();
+    const fechaLimite = new Date(2026, 6, 20); // 15 de junio de 2026 (mes 6 = junio)
+    return hoy <= fechaLimite;
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
@@ -129,7 +136,9 @@ export default function PopupGaleria({
                 style={{ cursor: 'pointer' }}
               >
                 <option value="">Selecciona tu plan</option>
-                <option value="Cóndor Early Bird">Cóndor Early Bird - $32.500 (hasta 15 junio)</option>
+                {esEarlyBirdValido() && (
+                  <option value="Cóndor Early Bird">Cóndor Early Bird - $32.500 (hasta 15 junio)</option>
+                )}
                 <option value="Cóndor">Cóndor - $30.000 (hasta 30 junio)</option>
                 <option value="Cáraza">Cáraza - $27.500 (hasta 30 junio)</option>
                 <option value="Jilguero">Jilguero - $20.000 (hasta 30 junio)</option>
