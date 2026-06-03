@@ -21,9 +21,9 @@ const MONTOS_MEMBRESIA = {
 
 // Códigos de cupón según plan
 const CODIGOS_CUPON = {
-  'Cóndor Early Bird': 'DESCUENTO_CONDOR',
-  'Cóndor': 'DESCUENTO_CONDOR',
-  'Caracara': 'DESCUENTO_CARACARA',
+  'Cóndor Early Bird': 'CLa8AhGnOd',
+  'Cóndor': 'CLa8AhGnOd',
+  'Caracara': 'AJeKHCvX5L',
   'Jilguero': 'SIN_DESCUENTO'
 };
 
