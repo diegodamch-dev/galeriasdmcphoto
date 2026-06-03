@@ -3,6 +3,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Precios por foto según plan
 const PRECIOS_POR_FOTO = {
   'Cóndor Early Bird': 1250,
   'Cóndor': 1250,
@@ -10,6 +11,7 @@ const PRECIOS_POR_FOTO = {
   'Jilguero': 2250
 };
 
+// Montos de membresía según plan
 const MONTOS_MEMBRESIA = {
   'Cóndor Early Bird': 40000,
   'Cóndor': 32500,
@@ -17,12 +19,28 @@ const MONTOS_MEMBRESIA = {
   'Jilguero': 20000
 };
 
+// Códigos de cupón según plan
 const CODIGOS_CUPON = {
   'Cóndor Early Bird': 'DESCUENTO_CONDOR',
   'Cóndor': 'DESCUENTO_CONDOR',
   'Caracara': 'DESCUENTO_CARACARA',
   'Jilguero': 'SIN_DESCUENTO'
 };
+
+// Función para generar usuario (email sin dominio)
+function generarUsuario(email) {
+  return email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+// Función para generar contraseña aleatoria de 8 caracteres
+function generarContraseña() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let contraseña = '';
+  for (let i = 0; i < 8; i++) {
+    contraseña += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return contraseña;
+}
 
 export async function POST(request) {
   try {
@@ -42,12 +60,19 @@ export async function POST(request) {
       );
     }
 
+    // Generar usuario y contraseña
+    const usuario = generarUsuario(email);
+    const contraseña = generarContraseña();
+
+    // URL de Google Sheets
     const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbyl3hCuqQ3tnotpMV42QSqjKUE5L4qYOZtqZlOkNetop7DhLhriqIOZuwh7x857ARBUhw/exec';
 
     const body = {
       nombre: nombre || '',
       email: email,
       plan: plan,
+      usuario: usuario,
+      contraseña: contraseña,
       timestamp: timestamp || new Date().toLocaleString('es-CL', { timeZone: 'America/Santiago' }),
       evento: 'Club DMC - Membresía',
       precioFoto: PRECIOS_POR_FOTO[plan] || 0,
@@ -55,6 +80,7 @@ export async function POST(request) {
       codigoCupon: CODIGOS_CUPON[plan] || 'SIN_DESCUENTO'
     };
 
+    // Enviar a Google Sheets
     const response = await fetch(googleScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -62,6 +88,7 @@ export async function POST(request) {
     });
 
     if (!response.ok) {
+      console.error('Error en Google Script:', await response.text());
       throw new Error('Error al guardar en Google Sheets');
     }
 
@@ -69,6 +96,7 @@ export async function POST(request) {
     const precioFoto = PRECIOS_POR_FOTO[plan] || 0;
     const codigo = CODIGOS_CUPON[plan] || 'SIN_DESCUENTO';
 
+    // Enviar correo de confirmación
     await resend.emails.send({
       from: 'DMC Photo <no-reply@dmcphoto.art>',
       to: email,
@@ -91,12 +119,11 @@ export async function POST(request) {
           <strong>Monto:</strong> $${monto.toLocaleString()}
         </p>
         
-        <h3>🔗 Instrucciones para acceder a la galería:</h3>
+        <h3>🔗 Tus credenciales de acceso a la galería:</h3>
         <p>
-          Una vez realizada la transferencia, accede a la galería con estos datos:<br><br>
-          <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026">https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026</a><br>
-          <strong>Usuario:</strong> cliente.${plan.toLowerCase().replace(' ', '')}<br>
-          <strong>Contraseña:</strong> ${plan}2026
+          <strong>Usuario:</strong> ${usuario}<br>
+          <strong>Contraseña:</strong> ${contraseña}<br><br>
+          <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/galeria/29-julio-2026">https://dmcphotography.arcadina.com/galeria/29-julio-2026</a>
         </p>
         
         <h3>🏷️ Código de descuento para fotos extras:</h3>
@@ -109,13 +136,15 @@ export async function POST(request) {
         
         <hr>
         <p style="font-size: 12px;">DMC Photo - Fotografía deportiva y de montaña</p>
-        <p style="font-size: 12px;">Envía el comprobante de transferencia a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
+        <p style="font-size: 12px;">Envía el comprobante a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
       `
     });
 
     return NextResponse.json({ 
       ok: true, 
-      mensaje: 'Registro exitoso, revisa tu correo'
+      mensaje: 'Registro exitoso, revisa tu correo',
+      usuario: usuario,
+      contraseña: contraseña
     });
 
   } catch (error) {
