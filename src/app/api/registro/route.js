@@ -21,9 +21,9 @@ const MONTOS_MEMBRESIA = {
 
 // Códigos de cupón según plan
 const CODIGOS_CUPON = {
-  'Cóndor Early Bird': 'CLa8AhGnOd',
-  'Cóndor': 'CLa8AhGnOd',
-  'Caracara': 'AJeKHCvX5L',
+  'Cóndor Early Bird': 'Descuento_Condor',
+  'Cóndor': 'Descuento_Condor',
+  'Caracara': 'Descuento_Caracara',
   'Jilguero': 'SIN_DESCUENTO'
 };
 
@@ -95,6 +95,8 @@ export async function POST(request) {
     const monto = MONTOS_MEMBRESIA[plan] || 0;
     const precioFoto = PRECIOS_POR_FOTO[plan] || 0;
     const codigo = CODIGOS_CUPON[plan] || 'SIN_DESCUENTO';
+    const galeriaUrl = 'https://dmcphotography.arcadina.com/lang/es/cmi-26';
+    const contraseñaGaleria = 'CLUB2026'; // Contraseña universal para la galería
 
     // Enviar correo de confirmación
     await resend.emails.send({
@@ -119,11 +121,10 @@ export async function POST(request) {
           <strong>Monto:</strong> $${monto.toLocaleString()}
         </p>
         
-        <h3>🔗 Tus credenciales de acceso a la galería:</h3>
+        <h3>🔗 Acceso inmediato a la galería:</h3>
         <p>
-          <strong>Usuario:</strong> ${usuario}<br>
-          <strong>Contraseña:</strong> ${contraseña}<br><br>
-          <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/lang/es/cmi-26">https://dmcphotography.arcadina.com/lang/es/cmi-26</a>
+          <strong>Enlace:</strong> <a href="${galeriaUrl}">${galeriaUrl}</a><br>
+          <strong>Contraseña de acceso:</strong> ${contraseñaGaleria}
         </p>
         
         <h3>🏷️ Código de descuento para fotos extras:</h3>
