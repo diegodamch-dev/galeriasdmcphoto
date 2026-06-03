@@ -73,6 +73,10 @@ export async function POST(request) {
       throw new Error('Error al guardar en Google Sheets');
     }
 
+    // Obtener valores numéricos seguros
+    const monto = MONTOS_MEMBRESIA[plan] || 0;
+    const precioFoto = PRECIOS_POR_FOTO[plan] || 0;
+
     // Enviar correo de confirmación
     const emailResult = await resend.emails.send({
       from: 'DMC Photo <no-reply@dmcphoto.art>',
@@ -84,7 +88,7 @@ export async function POST(request) {
         <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
         
         <p><strong>Plan seleccionado:</strong> ${plan}</p>
-        <p><strong>Monto a transferir:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}</p>
+        <p><strong>Monto a transferir:</strong> $${monto.toLocaleString()}</p>
         
         <h3>📌 Datos para la transferencia bancaria:</h3>
         <p>
@@ -93,7 +97,7 @@ export async function POST(request) {
           RUT: 76061484k<br>
           Email: dmcphoto2002@yahoo.com<br>
           Número de cuenta: 27070042806<br>
-          <strong>Monto:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}
+          <strong>Monto:</strong> $${monto.toLocaleString()}
         </p>
         
         <h3>🔗 Instrucciones para acceder a la galería:</h3>
@@ -110,7 +114,7 @@ export async function POST(request) {
             ${CODIGOS_CUPON[plan]}
           </strong>
         </p>
-        <p><strong>Precio por foto con descuento:</strong> $${PRECIOS_POR_FOTO[plan].toLocaleString()}</p>
+        <p><strong>Precio por foto con descuento:</strong> $${precioFoto.toLocaleString()}</p>
         
         <hr>
         <p style="font-size: 12px;">DMC Photo - Fotografía deportiva y de montaña</p>
