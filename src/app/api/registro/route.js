@@ -45,8 +45,8 @@ export async function POST(request) {
       );
     }
 
-    // Guardar en Google Sheets
-    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';';
+    // URL CORRECTA de Google Sheets
+    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwHnTbls8sMHVo8sf9c-_zMaY1MfaWsORzYRmvQ_-p3JF86XAhtuXz0S_V0avVWO610Aw/exec';
     
     const body = {
       nombre: nombre || '',
@@ -59,81 +59,70 @@ export async function POST(request) {
       codigoCupon: CODIGOS_CUPON[plan] || 'SIN_DESCUENTO'
     };
 
+    // Enviar a Google Sheets
     const response = await fetch(googleScriptUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
 
+    const googleResult = await response.json();
+    console.log('Respuesta de Google Sheets:', googleResult);
+
     if (!response.ok) {
-      console.error('Error en Google Script:', await response.text());
       throw new Error('Error al guardar en Google Sheets');
     }
 
-    // Enviar correo de confirmación con Resend
-    try {
-      await resend.emails.send({
-        from: 'DMC Photo <no-reply@dmcphoto.art>',
-        to: email,
-        subject: '🔐 Solicitud de membresía Club DMC 2026',
-        html: `
-          <h2>Hola ${nombre || 'cliente'},</h2>
-          
-          <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
-          
-          <p><strong>Plan seleccionado:</strong> ${plan}</p>
-          <p><strong>Monto a transferir:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}</p>
-          
-          <h3>📌 Datos para la transferencia bancaria:</h3>
-          <p>
-            Banco: [Bancoestado]<br>
-            Titular: [DMCPhoto<br>
-            RUT: [76061484k]<br>
-            Email: [dmcphoto2002@yahoo.com]<br>
-            Número de cuenta: [27070042806]<br>
-            <strong>Monto:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}
-          </p>
-          
-          <h3>🔗 Instrucciones para acceder a la galería:</h3>
-          <p>
-            Una vez realizada la transferencia, accede a la galería con estos datos:<br><br>
-            <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026">https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026</a><br>
-            <strong>Usuario:</strong> cliente.${plan.toLowerCase().replace(' ', '')}<br>
-            <strong>Contraseña:</strong> ${plan}2026
-          </p>
-          
-          <h3>🏷️ Código de descuento para fotos extras:</h3>
-          <p>
-            <strong style="background-color: #f0f0f0; padding: 8px 16px; border-radius: 5px; font-size: 18px;">
-              ${CODIGOS_CUPON[plan]}
-            </strong>
-          </p>
-          <p>
-            <strong>¿Cómo aplicar el descuento?</strong><br>
-            1. Selecciona tus fotos favoritas<br>
-            2. Ve al carrito de compras<br>
-            3. Busca el campo "Cupón de descuento" o "Código promocional"<br>
-            4. Ingresa el código de descuento que te compartimos<br>
-            5. El precio se ajustará automáticamente a tu tarifa preferencial
-          </p>
-          
-          <p><strong>Precio por foto con descuento:</strong> $${PRECIOS_POR_FOTO[plan].toLocaleString()}</p>
-          
-          <hr>
-          <p style="font-size: 12px; color: #2001;">DMC Photo - Fotografía deportiva y de montaña</p>
-          <p style="font-size: 12px; color: #2007;">Envía el comprobante de transferencia a [tu correo] para activar tu cuenta.</p>
-        `
-      });
-    } catch (emailError) {
-      console.error('Error al enviar correo:', emailError);
-    }
+    // Enviar correo de confirmación
+    const emailResult = await resend.emails.send({
+      from: 'DMC Photo <no-reply@dmcphoto.art>',
+      to: email,
+      subject: '🔐 Solicitud de membresía Club DMC 2026',
+      html: `
+        <h2>Hola ${nombre || 'cliente'},</h2>
+        
+        <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
+        
+        <p><strong>Plan seleccionado:</strong> ${plan}</p>
+        <p><strong>Monto a transferir:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}</p>
+        
+        <h3>📌 Datos para la transferencia bancaria:</h3>
+        <p>
+          Banco: Bancoestado<br>
+          Titular: DMCPhoto<br>
+          RUT: 76061484k<br>
+          Email: dmcphoto2002@yahoo.com<br>
+          Número de cuenta: 27070042806<br>
+          <strong>Monto:</strong> $${MONTOS_MEMBRESIA[plan].toLocaleString()}
+        </p>
+        
+        <h3>🔗 Instrucciones para acceder a la galería:</h3>
+        <p>
+          Una vez realizada la transferencia, accede a la galería con estos datos:<br><br>
+          <strong>Enlace:</strong> <a href="https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026">https://dmcphotography.arcadina.com/galeria/prueba-club-junio-2026</a><br>
+          <strong>Usuario:</strong> cliente.${plan.toLowerCase().replace(' ', '')}<br>
+          <strong>Contraseña:</strong> ${plan}2026
+        </p>
+        
+        <h3>🏷️ Código de descuento para fotos extras:</h3>
+        <p>
+          <strong style="background-color: #f0f0f0; padding: 8px 16px; border-radius: 5px; font-size: 18px;">
+            ${CODIGOS_CUPON[plan]}
+          </strong>
+        </p>
+        <p><strong>Precio por foto con descuento:</strong> $${PRECIOS_POR_FOTO[plan].toLocaleString()}</p>
+        
+        <hr>
+        <p style="font-size: 12px;">DMC Photo - Fotografía deportiva y de montaña</p>
+        <p style="font-size: 12px;">Envía el comprobante de transferencia a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
+      `
+    });
+
+    console.log('Correo enviado:', emailResult);
 
     return NextResponse.json({ 
       ok: true, 
-      mensaje: 'Registro exitoso, revisa tu correo',
-      precioFoto: PRECIOS_POR_FOTO[plan],
-      montoMembresia: MONTOS_MEMBRESIA[plan],
-      codigoCupon: CODIGOS_CUPON[plan]
+      mensaje: 'Registro exitoso, revisa tu correo'
     });
 
   } catch (error) {

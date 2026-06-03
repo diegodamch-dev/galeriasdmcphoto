@@ -33,7 +33,7 @@ export default function PopupGaleria({
   // Verificar si Early Bird sigue vigente (hasta 15 de junio de 2026)
   const esEarlyBirdValido = () => {
     const hoy = new Date();
-    const fechaLimite = new Date(2026, 6, 20); // 15 de junio de 2026 (mes 6 = junio)
+    const fechaLimite = new Date(2026, 5, 15); // 15 de junio de 2026 (mes 5 = junio)
     return hoy <= fechaLimite;
   };
 
@@ -68,8 +68,8 @@ export default function PopupGaleria({
 
       setMsg(
         lang === 'es'
-          ? `✅ ¡Registro exitoso! Pronto recibirás tu código de acceso al club.`
-          : `✅ Registration successful! You will soon receive your club access code.`
+          ? `✅ ¡Registro exitoso! Revisa tu correo. Te hemos enviado los datos de pago y acceso.`
+          : `✅ Registration successful! Check your email. We have sent you the payment and access details.`
       );
 
       setNombre('');
@@ -79,7 +79,7 @@ export default function PopupGaleria({
       setTimeout(() => {
         onClose();
         setMsg('');
-      }, 4000);
+      }, 5000);
 
     } catch (err) {
       console.error('Error:', err);
@@ -101,7 +101,7 @@ export default function PopupGaleria({
         <button onClick={onClose} className="popup-close">×</button>
 
         <h2 style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--color-primary)' }}>
-          {esRegistro ? 'Únete al Club DMC 2026' : 'Iniciar Sesión'}
+          {esRegistro ? '🐦 Únete al Club DMC 2026' : 'Iniciar Sesión'}
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -137,11 +137,11 @@ export default function PopupGaleria({
               >
                 <option value="">Selecciona tu plan</option>
                 {esEarlyBirdValido() && (
-                  <option value="Cóndor Early Bird">Cóndor Early Bird - $40.000 (hasta 15 junio)</option>
+                  <option value="Cóndor Early Bird">🦅 Cóndor Early Bird - $40.000 (hasta 15 junio) + Sorteo</option>
                 )}
-                <option value="Cóndor">Cóndor - $32.500 (hasta 30 junio)</option>
-                <option value="Cáraza">Cáraza - $27.500 (hasta 30 junio)</option>
-                <option value="Jilguero">Jilguero - $20.000 (hasta 30 junio)</option>
+                <option value="Cóndor">🦅 Cóndor - $32.500 (hasta 30 junio) + Sorteo</option>
+                <option value="Caracara">🐦 Caracara - $27.500 (hasta 30 junio)</option>
+                <option value="Jilguero">🐦 Jilguero - $20.000 (hasta 30 junio)</option>
               </select>
             </>
           )}
