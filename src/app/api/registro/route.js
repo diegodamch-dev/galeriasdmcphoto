@@ -42,6 +42,20 @@ function generarContraseña() {
   return contraseña;
 }
 
+// Función para calcular fecha límite de pago (48 horas después)
+function fechaLimitePago() {
+  const fecha = new Date();
+  fecha.setHours(fecha.getHours() + 48);
+  return fecha.toLocaleString('es-CL', { 
+    timeZone: 'America/Santiago',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 export async function POST(request) {
   try {
     const { nombre, email, plan, timestamp } = await request.json();
@@ -95,49 +109,50 @@ export async function POST(request) {
     const monto = MONTOS_MEMBRESIA[plan] || 0;
     const precioFoto = PRECIOS_POR_FOTO[plan] || 0;
     const codigo = CODIGOS_CUPON[plan] || 'SIN_DESCUENTO';
-    const galeriaUrl = 'https://dmcphotography.arcadina.com/lang/es/cmi-26';
-    const contraseñaGaleria = 'CLUB2026'; // Contraseña universal para la galería
+    const fechaLimite = fechaLimitePago();
 
     // Enviar correo de confirmación
     await resend.emails.send({
       from: 'DMC Photo <no-reply@dmcphoto.art>',
       to: email,
-      subject: '🔐 Solicitud de membresía Club DMC 2026',
+      subject: 'Bienvenido al Club DMC 2026 - Completá tu membresía',
       html: `
         <h2>Hola ${nombre || 'cliente'},</h2>
         
-        <p>Hemos recibido tu solicitud de membresía para el <strong>Club DMC 2026</strong>.</p>
+        <p>¡Gracias por confiar en DMC Photo y querer ser parte del <strong>Club DMC 2026</strong>!</p>
         
-        <p><strong>Plan seleccionado:</strong> ${plan}</p>
-        <p><strong>Monto a transferir:</strong> $${monto.toLocaleString()}</p>
+        <h3>📌 Resumen de tu solicitud:</h3>
+        <ul>
+          <li><strong>Plan seleccionado:</strong> ${plan}</li>
+          <li><strong>Precio por foto (con descuento):</strong> $${precioFoto.toLocaleString()}</li>
+          <li><strong>Monto de membresía a pagar:</strong> $${monto.toLocaleString()}</li>
+        </ul>
         
-        <h3>📌 Datos para la transferencia bancaria:</h3>
+        <h3>📌 ¿Cómo activar tu membresía?</h3>
         <p>
-          Banco: Bancoestado<br>
-          Titular: DMCPhoto<br>
-          RUT: 76061484k<br>
-          Email: dmcphoto2002@yahoo.com<br>
-          Número de cuenta: 27070042806<br>
-          <strong>Monto:</strong> $${monto.toLocaleString()}
+          1. Realiza una transferencia bancaria por el monto de <strong>$${monto.toLocaleString()}</strong> a los siguientes datos:<br><br>
+          <strong>Banco:</strong> Bancoestado<br>
+          <strong>Titular:</strong> DMCPhoto<br>
+          <strong>RUT:</strong> 76061484k<br>
+          <strong>Email:</strong> dmcphoto2002@yahoo.com<br>
+          <strong>Número de cuenta:</strong> 27070042806
+        </p>
+        <p>
+          2. Envía el comprobante de transferencia a: <strong>dmcphoto2002@yahoo.com</strong>
+        </p>
+        <p>
+          3. Espera nuestra confirmación (en un plazo máximo de 48 horas hábiles).
         </p>
         
-        <h3>🔗 Acceso inmediato a la galería:</h3>
-        <p>
-          <strong>Enlace:</strong> <a href="${galeriaUrl}">${galeriaUrl}</a><br>
-          <strong>Contraseña de acceso:</strong> ${contraseñaGaleria}
-        </p>
+        <p><strong>📅 Fecha límite para pagar tu membresía:</strong> ${fechaLimite}</p>
+        <p>Si no realizas el pago antes de esta fecha, tu solicitud será cancelada.</p>
         
-        <h3>🏷️ Código de descuento para fotos extras:</h3>
-        <p>
-          <strong style="background-color: #f0f0f0; padding: 8px 16px; border-radius: 5px; font-size: 18px;">
-            ${codigo}
-          </strong>
-        </p>
-        <p><strong>Precio por foto con descuento:</strong> $${precioFoto.toLocaleString()}</p>
-        <p><strong>Instrucciones:</strong> Al momento de pagar en el carrito, ingresa este código en el campo "Cupón de descuento".</p>
+        <p>Una vez que acreditemos tu pago, te enviaremos un segundo correo con tu <strong>enlace de acceso directo</strong> a la galería privada y tu <strong>código de descuento personal</strong>.</p>
+        
+        <p>¡Gracias por ser parte de esta comunidad!</p>
         
         <hr>
-        <p style="font-size: 12px;">DMC Photo - Fotografía deportiva y de montaña</p>
+        <p style="font-size: 12px;">DMCPhoto - Invierno 26</p>
         <p style="font-size: 12px;">Envía el comprobante de transferencia a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
       `
     });
