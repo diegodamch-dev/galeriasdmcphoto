@@ -113,9 +113,9 @@ export async function POST(request) {
 
     // Enviar correo de confirmación
     await resend.emails.send({
-      from: 'DMC Photo <no-reply@dmcphoto.art>',
+      from: 'DMCPhoto <no-reply@dmcphoto.art>',
       to: email,
-      subject: 'Bienvenido al Club DMC 2026 - Completá tu membresía',
+      subject: 'Bienvenido al Club DMC 2026 - Completa tu membresía',
       html: `
         <h2>Hola ${nombre || 'cliente'},</h2>
         
