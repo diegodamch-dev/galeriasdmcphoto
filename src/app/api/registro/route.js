@@ -19,11 +19,11 @@ const MONTOS_MEMBRESIA = {
   'Jilguero': 20000
 };
 
-// Códigos de cupón según plan
+// Códigos de cupón según plan (CORREGIDOS)
 const CODIGOS_CUPON = {
-  'Cóndor Early Bird': 'Descuento_Condor',
-  'Cóndor': 'Descuento_Condor',
-  'Caracara': 'Descuento_Caracara',
+  'Cóndor Early Bird': 'UmLIwuHH7L',
+  'Cóndor': 'UmLIwuHH7L',
+  'Caracara': 'AJeKHCvX5L',
   'Jilguero': 'SIN_DESCUENTO'
 };
 
@@ -113,7 +113,7 @@ export async function POST(request) {
 
     // Enviar correo de confirmación
     await resend.emails.send({
-      from: 'DMCPhoto <no-reply@dmcphoto.art>',
+      from: 'DMC Photo <no-reply@dmcphoto.art>',
       to: email,
       subject: 'Bienvenido al Club DMC 2026 - Completa tu membresía',
       html: `
@@ -152,7 +152,7 @@ export async function POST(request) {
         <p>¡Gracias por ser parte de esta comunidad!</p>
         
         <hr>
-        <p style="font-size: 12px;">DMCPhoto - Invierno 26</p>
+        <p style="font-size: 12px;">DMC Photo - Fotografía deportiva y de montaña</p>
         <p style="font-size: 12px;">Envía el comprobante de transferencia a dmcphoto2002@yahoo.com para activar tu cuenta.</p>
       `
     });
