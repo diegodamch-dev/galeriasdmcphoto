@@ -79,7 +79,9 @@ export async function POST(request) {
     const contraseña = generarContraseña();
 
     // URL de Google Sheets
-    const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbyl3hCuqQ3tnotpMV42QSqjKUE5L4qYOZtqZlOkNetop7DhLhriqIOZuwh7x857ARBUhw/exec';
+    // URL de Google Sheets (actualizada)
+const googleScriptUrl = 'https://script.google.com/macros/s/AKfycbwBzDFDJkpXs9884mFHPxjH3ZR3xhmpH7gyJqys-wcjp0lTp-8zsnKxFaAxQUBWTzgvig/exec';
+    
 
     const body = {
       nombre: nombre || '',
